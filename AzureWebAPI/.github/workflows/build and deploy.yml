@@ -7,7 +7,7 @@ on:
     - main
 
 env:
-  AZURE_WEBAPP_NAME: AzureWebAPI
+  AZURE_WEBAPP_NAME: AZUREWEBAPIMDP
   AZURE_WEBAPP_PACKAGE_PATH: "./publish"
 
 jobs:
