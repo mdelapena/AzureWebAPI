@@ -1,36 +1,39 @@
-name: "Build and Deploy"
+name: Publish 🚀
 
-on: [push, workflow,dispatch]
+on:
+  workflow_dispatch:
+  push:
+    branches:
+    - main
 
-env: 
-  AZURE_WEB_NAME: asp-core-sample-deploy #this is your application name
-  AZURE_WEBAPP_PACKAGE_PATH: './published' # set this to the path to your web app
-  NETCORE_VERSION: '6.0.x'
+env:
+  AZURE_WEBAPP_NAME: AzureWebAPI
+  AZURE_WEBAPP_PACKAGE_PATH: "./publish"
 
 jobs:
- build:
-  name: Build and Deploy
-  runs-on: ubuntu-latest
-  steps:
-  - users: actions/checkout@v2
-  
-  - name: Setup .NET Core SDK ${{ env.NETCORE_VERSION}}
-    uses: actions/setup-dotnet@v1
-    with: 
-      dotnet-version: ${{ env.NETCORE_VERSION}}
+  publish:
+    runs-on: ubuntu-latest
     
-  - name: Restore
-    run: dotnet Restore
-    
-  - name: Build
-    run: dotnet build --no-restore -c Release
-
-  - name: Publish app for deploy
-    run: dotnet publish --no-build -configuration Release --no-build --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH}}
-
-  - name: 'Deploy to Azure Webapp'
-    uses: azure/webapps-deploy@v2
-    with: 
-      app-name: ${{ env.AZURE_WEB_NAME}}
-      publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE}}
-      package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH}}
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0.x'
+          
+      - name: Restore
+        run: dotnet restore ./AzureWebAPI.sln
+        
+      - name: Build
+        run: dotnet build ./AzureWebAPI.sln --configuration Release --no-restore
+        
+      - name: Publish
+        run: dotnet publish ./AzureWebAPI.sln --configuration Release --no-build --output '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}'
+        
+      - name: Deployment
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+          package: "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}"
